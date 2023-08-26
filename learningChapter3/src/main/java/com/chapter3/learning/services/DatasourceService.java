@@ -1,2 +1,6 @@
-package com.chapter3.learning.SERVICES;public interface DatasourceService {
+package com.chapter3.learning.services;
+
+public interface DatasourceService {
+
+    String getDatasource();
 }

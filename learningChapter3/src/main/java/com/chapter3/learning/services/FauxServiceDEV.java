@@ -1,9 +1,14 @@
-package com.chapter3.learning.SERVICES;
+package com.chapter3.learning.services;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-@Service
-public class FauxServiceDEV {
+@Profile({"dev", "default"})
+@Service("fauxService")
+public class FauxServiceDEV implements DatasourceService{
 
-
+    @Override
+    public String getDatasource(){
+        return "dev datasource";
+    }
 }
