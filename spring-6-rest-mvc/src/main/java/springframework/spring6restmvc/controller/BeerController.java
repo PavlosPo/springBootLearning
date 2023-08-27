@@ -1,6 +1,7 @@
 package springframework.spring6restmvc.controller;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -16,12 +17,11 @@ import java.util.UUID;
 
 
 @Slf4j
-@AllArgsConstructor // creates the constructors
+@RequiredArgsConstructor // creates the constructors
 @RestController
 @RequestMapping("/api/v1/beer") // default path mapping for every method inside here
 public class BeerController {
     private final BeerService beerService;
-
 
     @DeleteMapping("/{beerId}")
     public ResponseEntity deleteById(@PathVariable("beerId") UUID id) {
