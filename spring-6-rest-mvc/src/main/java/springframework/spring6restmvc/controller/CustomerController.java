@@ -18,18 +18,20 @@ import java.util.UUID;
 @Slf4j
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/customer")
+@RequestMapping
 public class CustomerController {
 
+    public final static String CUSTOMER_PATH = "/api/v1/customer";
+    public final static String CUSTOMER_PATH_ID = CUSTOMER_PATH + "/{customerId}";
     private final CustomerService customerService;
 
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(CUSTOMER_PATH)
     public List<Customer> listCustomers() {
         return customerService.listCustomers();
     }
 
-    @RequestMapping(value = "/{customerId}", method = RequestMethod.GET)
+    @GetMapping(CUSTOMER_PATH_ID)
     public Customer getCustomerById(@PathVariable("customerId") UUID id) {
 
         log.debug("Get Customer by Id - in controller");
@@ -37,7 +39,7 @@ public class CustomerController {
         return customerService.getCustomerById(id);
     }
 
-    @PostMapping
+    @PostMapping(CUSTOMER_PATH)
     public ResponseEntity handlePost(@RequestBody Customer customer) {
 
         Customer savedCustomer = customerService.saveCustomer(customer);
@@ -48,7 +50,7 @@ public class CustomerController {
         return new ResponseEntity(headers, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{customerId}")
+    @PutMapping(CUSTOMER_PATH_ID)
     public ResponseEntity updateCustomer(
             @RequestBody Customer customer,
             @PathVariable("customerId") UUID id) {
@@ -58,7 +60,7 @@ public class CustomerController {
         return  new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping("/{customerId}")
+    @DeleteMapping(CUSTOMER_PATH_ID)
     public ResponseEntity deleteById(@PathVariable("customerId") UUID id) {
 
         customerService.deleteById(id);

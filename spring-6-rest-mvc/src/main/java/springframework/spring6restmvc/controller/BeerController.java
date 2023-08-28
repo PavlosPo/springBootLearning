@@ -19,11 +19,14 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor // creates the constructors
 @RestController
-@RequestMapping("/api/v1/beer") // default path mapping for every method inside here
+@RequestMapping // default path mapping for every method inside here
 public class BeerController {
+
+    public static final String BEER_PATH = "/api/v1/beer";
+    public static final String BEER_PATH_ID = BEER_PATH + "/{beerId}";
     private final BeerService beerService;
 
-    @DeleteMapping("/{beerId}")
+    @DeleteMapping(BEER_PATH_ID)
     public ResponseEntity deleteById(@PathVariable("beerId") UUID id) {
 
         beerService.deleteById(id);
@@ -32,18 +35,15 @@ public class BeerController {
     }
 
 
-    @PutMapping("/{beerId}")
-    public ResponseEntity updateById(
-            @PathVariable("beerId") UUID beerId,
-            @RequestBody Beer beer) {
+    @PutMapping(BEER_PATH_ID)
+    public ResponseEntity updateById(@PathVariable("beerId") UUID beerId, @RequestBody Beer beer) {
 
         beerService.updateBeerById(beerId, beer);
-
 
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping
+    @PostMapping(value = BEER_PATH)
     // @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity handlePost(@RequestBody Beer beer) {  // it binds the request as a instance
 
@@ -55,12 +55,12 @@ public class BeerController {
         return new ResponseEntity(headers, HttpStatus.CREATED);
     }
 
-    @RequestMapping(method = RequestMethod.GET) // GET method
+    @GetMapping(BEER_PATH) // GET method
     public List<Beer> listBeers() {
         return beerService.listBeers();
     }
 
-    @RequestMapping(value = "/{beerId}", method = RequestMethod.GET)    // GET method
+    @GetMapping(BEER_PATH_ID)    // GET method
     public Beer getBeerById(@PathVariable("beerId") UUID beerId) {    // to get the id from the URL
 
         log.debug("Get Beer by Id - in controller");
