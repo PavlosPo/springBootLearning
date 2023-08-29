@@ -13,6 +13,7 @@ import springframework.spring6restmvc.service.CustomerService;
 import springframework.spring6restmvc.service.CustomerServiceImpl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -36,7 +37,7 @@ public class CustomerController {
 
         log.debug("Get Customer by Id - in controller");
 
-        return customerService.getCustomerById(id);
+        return customerService.getCustomerById(id).orElseThrow(NotFoundException::new);
     }
 
     @PostMapping(CUSTOMER_PATH)

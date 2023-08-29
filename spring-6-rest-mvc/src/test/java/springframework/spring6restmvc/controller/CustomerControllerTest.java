@@ -14,6 +14,7 @@ import springframework.spring6restmvc.model.Customer;
 import springframework.spring6restmvc.service.CustomerService;
 import springframework.spring6restmvc.service.CustomerServiceImpl;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +41,9 @@ class CustomerControllerTest {
     ObjectMapper objectMapper;
 
     CustomerServiceImpl customerServiceImpl;    // real data
+
+    @Captor
+    ArgumentCaptor<UUID> uuidArgumentCaptor;    // this captures the arguments passed in the HTTP METHODS
 
     @BeforeEach
     void setUp() {  // Recreated
@@ -81,7 +85,7 @@ class CustomerControllerTest {
         Customer testCustomer = customerServiceImpl.listCustomers().get(0);
 
         // Mockito
-        given(customerService.getCustomerById(testCustomer.getId())).willReturn(testCustomer);
+        given(customerService.getCustomerById(any(UUID.class))).willReturn(Optional.of(testCustomer));
 
         // Mock Mvc
         mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, testCustomer.getId())
@@ -92,10 +96,14 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.customerName").value(testCustomer.getCustomerName()));
     }
 
+    @Test
+    void getCustomerByIdNotFound() throws Exception{
 
-    @Captor
-    ArgumentCaptor<UUID> uuidArgumentCaptor;    // this captures the arguments passed in the HTTP METHODS
+        given(customerService.getCustomerById(any(UUID.class))).willReturn(Optional.empty());
 
+        mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
 
     @Test
     void testUpdateCustomerById() throws Exception {

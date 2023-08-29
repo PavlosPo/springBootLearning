@@ -1,8 +1,8 @@
 package springframework.spring6restmvc.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
+import springframework.spring6restmvc.controller.NotFoundException;
 import springframework.spring6restmvc.model.Customer;
 
 import java.time.LocalDateTime;
@@ -52,11 +52,11 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     @Override
-    public Customer getCustomerById(UUID id) {
+    public Optional<Customer> getCustomerById(UUID id) {
 
         log.debug("Get Customer Id - in service. Id: " + id.toString());
 
-        return customerMap.get(id);
+        return Optional.of(customerMap.get(id));
     }
 
     @Override

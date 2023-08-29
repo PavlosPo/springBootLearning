@@ -1,11 +1,10 @@
 package springframework.spring6restmvc.controller;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -16,6 +15,7 @@ import springframework.spring6restmvc.service.BeerService;
 import springframework.spring6restmvc.service.BeerServiceImpl;
 
 
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -47,6 +47,9 @@ class BeerControllerTest {
         beerServiceImpl = new BeerServiceImpl();    // will reset the data for the upcoming test
     }
 
+    @Captor
+    ArgumentCaptor<UUID> uuidArgumentCaptor;
+
     @Test
     void testCreateNewBeer() throws Exception {
         Beer beer = beerServiceImpl.listBeers().get(0);
@@ -77,7 +80,7 @@ class BeerControllerTest {
     void getBeerById() throws Exception {
         Beer testBeer = beerServiceImpl.listBeers().get(0);
 
-        given(beerService.getBeerById(testBeer.getId())).willReturn(testBeer);
+        given(beerService.getBeerById(testBeer.getId())).willReturn(Optional.of(testBeer));
 
         mockMvc.perform(get(BeerController.BEER_PATH_ID, testBeer.getId())
                         .accept(MediaType.APPLICATION_JSON))
@@ -85,6 +88,20 @@ class BeerControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(testBeer.getId().toString())))   // json value and the actual value
                 .andExpect(jsonPath("$.beerName").value(testBeer.getBeerName()));
+    }
+
+    /**
+     * We are testing an exception
+     *
+     * @throws Exception
+     */
+    @Test
+    void getBeerByIdNotFound() throws Exception {
+
+        given(beerService.getBeerById(any(UUID.class))).willReturn(Optional.empty());
+
+        mockMvc.perform(get(BeerController.BEER_PATH_ID, UUID.randomUUID()))
+                .andExpect(status().isNotFound());  // will need an exception handler in the controller : @ExceptionHandler()
     }
 
     @Test
