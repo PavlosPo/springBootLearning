@@ -10,7 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import springframework.spring6restmvc.model.Beer;
+import springframework.spring6restmvc.model.BeerDTO;
 import springframework.spring6restmvc.service.BeerService;
 import springframework.spring6restmvc.service.BeerServiceImpl;
 
@@ -52,16 +52,16 @@ class BeerControllerTest {
 
     @Test
     void testCreateNewBeer() throws Exception {
-        Beer beer = beerServiceImpl.listBeers().get(0);
-        beer.setVersion(null);
-        beer.setId(null);
+        BeerDTO beerDTO = beerServiceImpl.listBeers().get(0);
+        beerDTO.setVersion(null);
+        beerDTO.setId(null);
 
         /*
             Here, you're using given() to define the behavior of the beerService mock.
             You're saying that when the saveNewBeer() method is called with any Beer object,
             it should return the second beer from the list of beers obtained from beerServiceImpl.
          */
-        given(beerService.saveNewBeer(any(Beer.class))).willReturn(beerServiceImpl.listBeers().get(1)); // modifying the list
+        given(beerService.saveNewBeer(any(BeerDTO.class))).willReturn(beerServiceImpl.listBeers().get(1)); // modifying the list
 
         mockMvc.perform(post(BeerController.BEER_PATH)
                         .accept(MediaType.APPLICATION_JSON)
@@ -70,7 +70,7 @@ class BeerControllerTest {
                             The .content(objectMapper.writeValueAsString(beer)) part of the code is used to set
                             the request body of the simulated HTTP POST request in your MockMvc test.
                          */
-                        .content(objectMapper.writeValueAsString(beer)))    // Serializes the Java POJO to JSON
+                        .content(objectMapper.writeValueAsString(beerDTO)))    // Serializes the Java POJO to JSON
 
                 .andExpect(status().isCreated())    // did have created?
                 .andExpect(header().exists("Location"));    // is there a Location?
@@ -78,16 +78,16 @@ class BeerControllerTest {
 
     @Test
     void getBeerById() throws Exception {
-        Beer testBeer = beerServiceImpl.listBeers().get(0);
+        BeerDTO testBeerDTO = beerServiceImpl.listBeers().get(0);
 
-        given(beerService.getBeerById(testBeer.getId())).willReturn(Optional.of(testBeer));
+        given(beerService.getBeerById(testBeerDTO.getId())).willReturn(Optional.of(testBeerDTO));
 
-        mockMvc.perform(get(BeerController.BEER_PATH_ID, testBeer.getId())
+        mockMvc.perform(get(BeerController.BEER_PATH_ID, testBeerDTO.getId())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) // we are not returning data
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(testBeer.getId().toString())))   // json value and the actual value
-                .andExpect(jsonPath("$.beerName").value(testBeer.getBeerName()));
+                .andExpect(jsonPath("$.id", is(testBeerDTO.getId().toString())))   // json value and the actual value
+                .andExpect(jsonPath("$.beerName").value(testBeerDTO.getBeerName()));
     }
 
     /**
@@ -118,25 +118,29 @@ class BeerControllerTest {
 
     @Test
     void testUpdateBeer() throws Exception {    // we don't return anything in the service, so we check that the "action ran"
-        Beer beer = new BeerServiceImpl().listBeers().get(0);
+        BeerDTO beerDTO = new BeerServiceImpl().listBeers().get(0);
 
-        mockMvc.perform(put(BeerController.BEER_PATH_ID, beer.getId()) // put operation
+        given(beerService.updateBeerById(any(), any())).willReturn(Optional.of(beerDTO));
+
+        mockMvc.perform(put(BeerController.BEER_PATH_ID, beerDTO.getId()) // put operation
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(beer)));   // HTTP body
+                .content(objectMapper.writeValueAsString(beerDTO)));   // HTTP body
 
         /*
             This will verify one interaction where that is the .updateBeerById()
             So it checks that in the PUT method, this service.updateBeerById() was called once.
          */
-        verify(beerService).updateBeerById(any(UUID.class), any(Beer.class));   // new method - verifying the interaction
+        verify(beerService).updateBeerById(any(UUID.class), any(BeerDTO.class));   // new method - verifying the interaction
     }
 
     @Test
     void testDeleteBeer() throws Exception {
-        Beer beer = beerServiceImpl.listBeers().get(0);
+        BeerDTO beerDTO = beerServiceImpl.listBeers().get(0);
 
-        mockMvc.perform(delete(BeerController.BEER_PATH_ID,  beer.getId())
+        given(beerService.deleteById(any())).willReturn(true);
+
+        mockMvc.perform(delete(BeerController.BEER_PATH_ID,  beerDTO.getId())
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
@@ -153,6 +157,6 @@ class BeerControllerTest {
         ArgumentCaptor<UUID> uuidArgumentCaptor = ArgumentCaptor.forClass(UUID.class);  // instance to capture deleted item UUID
         verify(beerService).deleteById(uuidArgumentCaptor.capture());   // we capture the deleted argument UUID
 
-        assertThat(beer.getId()).isEqualTo(uuidArgumentCaptor.getValue());  // we are making sure we delete the same item UUID
+        assertThat(beerDTO.getId()).isEqualTo(uuidArgumentCaptor.getValue());  // we are making sure we delete the same item UUID
     }
 }

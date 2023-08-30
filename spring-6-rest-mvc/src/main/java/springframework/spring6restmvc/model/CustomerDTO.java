@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Builder
 @Data
-public class Customer {
+public class CustomerDTO {
     private String customerName;
     private UUID id;
     private Integer version;

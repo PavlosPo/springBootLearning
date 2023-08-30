@@ -3,17 +3,14 @@ package springframework.spring6restmvc.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springframework.spring6restmvc.model.Customer;
+import springframework.spring6restmvc.model.CustomerDTO;
 import springframework.spring6restmvc.service.CustomerService;
-import springframework.spring6restmvc.service.CustomerServiceImpl;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -28,12 +25,12 @@ public class CustomerController {
 
 
     @GetMapping(CUSTOMER_PATH)
-    public List<Customer> listCustomers() {
+    public List<CustomerDTO> listCustomers() {
         return customerService.listCustomers();
     }
 
     @GetMapping(CUSTOMER_PATH_ID)
-    public Customer getCustomerById(@PathVariable("customerId") UUID id) {
+    public CustomerDTO getCustomerById(@PathVariable("customerId") UUID id) {
 
         log.debug("Get Customer by Id - in controller");
 
@@ -41,31 +38,33 @@ public class CustomerController {
     }
 
     @PostMapping(CUSTOMER_PATH)
-    public ResponseEntity handlePost(@RequestBody Customer customer) {
+    public ResponseEntity handlePost(@RequestBody CustomerDTO customerDTO) {
 
-        Customer savedCustomer = customerService.saveCustomer(customer);
+        CustomerDTO savedCustomerDTO = customerService.saveCustomer(customerDTO);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/api/v1/customer/" + savedCustomer.getId().toString());
+        headers.add("Location", "/api/v1/customer/" + savedCustomerDTO.getId().toString());
 
         return new ResponseEntity(headers, HttpStatus.CREATED);
     }
 
     @PutMapping(CUSTOMER_PATH_ID)
-    public ResponseEntity updateCustomer(
-            @RequestBody Customer customer,
+    public ResponseEntity updateCustomerById(
+            @RequestBody CustomerDTO customerDTO,
             @PathVariable("customerId") UUID id) {
 
-        customerService.updateById(id ,customer);
-
+        if (customerService.updateById(id, customerDTO).isEmpty()) {
+            throw new NotFoundException();
+        }
         return  new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(CUSTOMER_PATH_ID)
     public ResponseEntity deleteById(@PathVariable("customerId") UUID id) {
 
-        customerService.deleteById(id);
-
+        if (!customerService.deleteById(id)) {
+            throw new NotFoundException();
+        }
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
