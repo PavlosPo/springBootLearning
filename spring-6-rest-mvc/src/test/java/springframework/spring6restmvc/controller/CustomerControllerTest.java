@@ -14,6 +14,9 @@ import springframework.spring6restmvc.model.CustomerDTO;
 import springframework.spring6restmvc.service.CustomerService;
 import springframework.spring6restmvc.service.CustomerServiceImpl;
 
+import javax.lang.model.util.Types;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +47,9 @@ class CustomerControllerTest {
 
     @Captor
     ArgumentCaptor<UUID> uuidArgumentCaptor;    // this captures the arguments passed in the HTTP METHODS
+
+    @Captor
+    ArgumentCaptor<CustomerDTO> customerArgumentCaptor;
 
     @BeforeEach
     void setUp() {  // Recreated
@@ -149,6 +155,24 @@ class CustomerControllerTest {
         // ArgumentCaptor<UUID> uuidArgumentCaptor = ArgumentCaptor.forClass(UUID.class);/
         verify(customerService).deleteById(uuidArgumentCaptor.capture());
         assertThat(customerDTO.getId()).isEqualTo(uuidArgumentCaptor.getValue());
+    }
 
+    @Test
+    void testPatchCustomer() throws Exception {
+        CustomerDTO customer = customerServiceImpl.listCustomers().get(0);
+
+        Map<String, Object> customerMap = new HashMap<>();
+        customerMap.put("customerName", "New Name");
+
+        mockMvc.perform(patch( CustomerController.CUSTOMER_PATH_ID, customer.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(customerMap)))
+                .andExpect(status().isNoContent());
+
+        verify(customerService).patchCustomerById(uuidArgumentCaptor.capture(),
+                customerArgumentCaptor.capture());
+
+        assertThat(uuidArgumentCaptor.getValue()).isEqualTo(customer.getId());
+        assertThat(customerArgumentCaptor.getValue().getCustomerName()).isEqualTo(customerMap.get("customerName"));
     }
 }

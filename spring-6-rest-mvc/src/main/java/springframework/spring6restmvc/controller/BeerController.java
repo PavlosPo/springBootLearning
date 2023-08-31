@@ -1,14 +1,22 @@
 package springframework.spring6restmvc.controller;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.SynthesizingMethodParameter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import springframework.spring6restmvc.entities.Beer;
 import springframework.spring6restmvc.model.BeerDTO;
 import springframework.spring6restmvc.service.BeerService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +41,22 @@ public class BeerController {
     }
 
 
+    @PatchMapping(BEER_PATH_ID)
+    public ResponseEntity updateBeerPatchById(@PathVariable("beerId") UUID beerId, @RequestBody Beer beer){
+
+        beerService.patchBeerById(beerId, beer);
+
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
     @PutMapping(BEER_PATH_ID)
-    public ResponseEntity updateById(@PathVariable("beerId") UUID beerId, @RequestBody BeerDTO beerDTO) {
+    public ResponseEntity updateById(@PathVariable("beerId")
+                                         @NotNull(message = "must not be null")
+                                         @NotBlank(message = "must not be blank")
+                                         UUID beerId,
+                                              @Validated @RequestBody BeerDTO beerDTO) {
+
+
         if (beerService.updateBeerById(beerId, beerDTO).isEmpty()) {
             throw new NotFoundException();
         }
@@ -44,7 +66,9 @@ public class BeerController {
 
     @PostMapping(value = BEER_PATH)
     // @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity handlePost(@RequestBody BeerDTO beerDTO) {  // it binds the request as a instance
+
+    public ResponseEntity handlePost(@Validated @RequestBody BeerDTO beerDTO) {  // it binds the request as an instance
+        // @Validated will validate the data coming from the request. Constraints created in the Java BEAN -> DTO objects.
 
         BeerDTO savedBeerDTO = beerService.saveNewBeer(beerDTO);
 
@@ -67,4 +91,6 @@ public class BeerController {
 
         return beerService.getBeerById(beerId).orElseThrow(NotFoundException::new);
     }
+
+
 }

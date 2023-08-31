@@ -2,6 +2,8 @@ package springframework.spring6restmvc.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import springframework.spring6restmvc.entities.Beer;
 import springframework.spring6restmvc.model.BeerDTO;
 
 import java.math.BigDecimal;
@@ -101,5 +103,28 @@ public class BeerServiceImpl implements BeerService {
     public boolean deleteById(UUID id) {
         beerMap.remove(id);
         return true;
+    }
+
+    @Override
+    public Optional<BeerDTO> patchBeerById(UUID beerId, Beer beer) {
+        BeerDTO existing = beerMap.get(beerId);
+
+        if (StringUtils.hasText(beer.getBeerName())){
+            existing.setBeerName(beer.getBeerName());
+        }
+
+        if (beer.getPrice() != null) {
+            existing.setPrice(beer.getPrice());
+        }
+
+        if (beer.getQuantityOnHand() != null){
+            existing.setQuantityOnHand(beer.getQuantityOnHand());
+        }
+
+        if (StringUtils.hasText(beer.getUpc())) {
+            existing.setUpc(beer.getUpc());
+        }
+
+        return Optional.of(existing);
     }
 }

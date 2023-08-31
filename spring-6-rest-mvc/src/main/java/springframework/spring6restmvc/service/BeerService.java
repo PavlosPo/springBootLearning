@@ -1,6 +1,7 @@
 package springframework.spring6restmvc.service;
 
 import org.springframework.stereotype.Service;
+import springframework.spring6restmvc.entities.Beer;
 import springframework.spring6restmvc.model.BeerDTO;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface BeerService {
     Optional<BeerDTO> updateBeerById(UUID beerId, BeerDTO beerDTO);
 
     boolean deleteById(UUID id);
+
+    Optional<BeerDTO> patchBeerById(UUID beerId, Beer beer);
 }

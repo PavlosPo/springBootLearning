@@ -3,6 +3,7 @@ package springframework.spring6restmvc.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import springframework.spring6restmvc.entities.Customer;
 import springframework.spring6restmvc.mappers.CustomerMapper;
 import springframework.spring6restmvc.model.CustomerDTO;
@@ -65,5 +66,22 @@ public class CustomerServiceJPA implements CustomerService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Optional<CustomerDTO> patchCustomerById(UUID customerId, CustomerDTO customer) {
+        AtomicReference<Optional<CustomerDTO>> atomicReference = new AtomicReference<>();
+
+        customerRepository.findById(customerId).ifPresentOrElse(foundCustomer -> {
+            if (StringUtils.hasText(customer.getCustomerName())){
+                foundCustomer.setCustomerName(customer.getCustomerName());
+            }
+            atomicReference.set(Optional.of(customerMapper
+                    .customerToCustomerDto(customerRepository.save(foundCustomer))));
+        }, () -> {
+            atomicReference.set(Optional.empty());
+        });
+
+        return atomicReference.get();
     }
 }
